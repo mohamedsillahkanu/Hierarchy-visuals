@@ -1,0 +1,984 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Level Hierarchy Extractor - Visual Guide</title>
+    <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            margin: 0; 
+            padding: 30px; 
+            background: #f0f4f8; 
+            font-family: 'Oswald', Arial, sans-serif; 
+            color: #000; 
+        }
+        
+        .page-container { max-width: 1200px; margin: 0 auto; }
+        
+        .header { 
+            background: #004080; 
+            color: white; 
+            padding: 25px; 
+            text-align: center; 
+            border-radius: 10px; 
+            margin-bottom: 25px; 
+        }
+        .header h1 { font-size: 26px; letter-spacing: 2px; }
+        .header p { font-size: 14px; margin-top: 8px; opacity: 0.9; }
+        .header .subtitle { font-size: 11px; margin-top: 5px; opacity: 0.8; }
+        
+        .tool-section {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            margin-bottom: 25px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        
+        .tool-title {
+            background: #004080;
+            color: white;
+            padding: 12px 20px;
+            border-radius: 6px;
+            font-size: 18px;
+            font-weight: 700;
+            text-align: center;
+            margin-bottom: 25px;
+        }
+        
+        .workflow {
+            display: flex;
+            align-items: flex-start;
+            justify-content: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+        
+        .step-box {
+            text-align: center;
+        }
+        
+        .step-label {
+            background: #004080;
+            color: white;
+            padding: 6px 14px;
+            border-radius: 15px;
+            font-size: 11px;
+            font-weight: 600;
+            margin-bottom: 10px;
+            display: inline-block;
+        }
+        
+        .file-box {
+            background: #fff;
+            border: 3px solid #004080;
+            border-radius: 10px;
+            padding: 16px;
+            width: 195px;
+            margin-bottom: 8px;
+        }
+        
+        .file-box.upload { 
+            border-color: #17a2b8; 
+            background: linear-gradient(135deg, #f0f9ff 0%, #e1f5fe 100%);
+        }
+        .file-box.select { 
+            border-color: #6f42c1; 
+            background: linear-gradient(135deg, #f8f4ff 0%, #ede7f6 100%);
+        }
+        .file-box.extract { 
+            border-color: #ffc107; 
+            background: linear-gradient(135deg, #fffef0 0%, #fff9e6 100%);
+        }
+        .file-box.output { 
+            border-color: #28a745; 
+            background: linear-gradient(135deg, #f0fff4 0%, #e8f5e9 100%);
+        }
+        
+        .file-icon {
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .file-name {
+            font-size: 13px;
+            font-weight: 700;
+            color: #004080;
+            margin-bottom: 5px;
+        }
+        
+        .file-box.upload .file-name { color: #17a2b8; }
+        .file-box.select .file-name { color: #6f42c1; }
+        .file-box.extract .file-name { color: #856404; }
+        .file-box.output .file-name { color: #155724; }
+        
+        .file-desc {
+            font-size: 10px;
+            color: #666;
+        }
+        
+        .step-desc {
+            font-size: 10px;
+            color: #666;
+            margin-top: 5px;
+            max-width: 195px;
+        }
+        
+        .arrow {
+            font-size: 26px;
+            color: #004080;
+            font-weight: 700;
+            margin-top: 55px;
+        }
+        
+        .data-preview {
+            background: #1e1e1e;
+            border-radius: 6px;
+            padding: 8px;
+            text-align: left;
+            font-family: 'Courier New', monospace;
+            font-size: 8px;
+            color: #9cdcfe;
+            line-height: 1.4;
+            margin-top: 10px;
+        }
+        
+        .data-preview .header-row { color: #569cd6; font-weight: bold; }
+        .data-preview .value { color: #ce9178; }
+        .data-preview .new-col { color: #4ec9b0; }
+        
+        .format-badges {
+            display: flex;
+            gap: 5px;
+            margin-top: 10px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        
+        .format-badge {
+            background: #e7f3ff;
+            border: 2px solid #004080;
+            border-radius: 6px;
+            padding: 3px 8px;
+            font-size: 8px;
+            font-weight: 700;
+            color: #004080;
+        }
+        
+        .format-badge.csv { border-color: #004080; background: #e7f3ff; }
+        .format-badge.excel { border-color: #28a745; background: #d4edda; color: #155724; }
+        
+        /* Column Selection Visual */
+        .column-visual {
+            margin-top: 10px;
+        }
+        
+        .column-chip-mini {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 8px;
+            font-weight: 600;
+            margin: 2px;
+            border: 2px solid;
+        }
+        
+        .column-chip-mini.unselected {
+            background: #fff;
+            border-color: #ddd;
+            color: #666;
+        }
+        
+        .column-chip-mini.selected {
+            background: #6f42c1;
+            border-color: #6f42c1;
+            color: #fff;
+        }
+        
+        .column-chip-mini .num {
+            background: #fff;
+            color: #6f42c1;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 7px;
+            margin-right: 3px;
+        }
+        
+        /* Hierarchy Visual */
+        .hierarchy-visual {
+            margin-top: 10px;
+            text-align: left;
+        }
+        
+        .hierarchy-flow {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+            margin-bottom: 8px;
+        }
+        
+        .level-badge-mini {
+            padding: 3px 8px;
+            border-radius: 10px;
+            font-size: 8px;
+            font-weight: 700;
+            color: white;
+        }
+        
+        .level-badge-mini.l1 { background: #004080; }
+        .level-badge-mini.l2 { background: #17a2b8; }
+        .level-badge-mini.l3 { background: #6f42c1; }
+        .level-badge-mini.l4 { background: #fd7e14; }
+        
+        .hierarchy-arrow-mini {
+            color: #004080;
+            font-size: 10px;
+            font-weight: 700;
+        }
+        
+        /* Tree Visual */
+        .tree-mini {
+            margin-top: 8px;
+            font-size: 8px;
+            text-align: left;
+            background: #f8f9fa;
+            padding: 8px;
+            border-radius: 4px;
+        }
+        
+        .tree-mini-node {
+            padding: 2px 0;
+        }
+        
+        .tree-mini-branch {
+            color: #004080;
+            font-weight: 600;
+        }
+        
+        .tree-mini-leaf {
+            color: #28a745;
+            margin-left: 12px;
+        }
+        
+        .tree-indent-1 { margin-left: 8px; }
+        .tree-indent-2 { margin-left: 16px; }
+        .tree-indent-3 { margin-left: 24px; }
+        
+        /* Output Visual */
+        .output-tabs {
+            display: flex;
+            gap: 3px;
+            margin-top: 8px;
+        }
+        
+        .output-tab {
+            padding: 3px 6px;
+            background: #f8f9fa;
+            border: 1px solid #ddd;
+            border-radius: 3px;
+            font-size: 7px;
+            font-weight: 600;
+        }
+        
+        .output-tab.active {
+            background: #004080;
+            color: white;
+            border-color: #004080;
+        }
+        
+        .result-table {
+            margin-top: 8px;
+            font-size: 7px;
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        .result-table th {
+            background: #004080;
+            color: white;
+            padding: 3px 5px;
+            text-align: left;
+            font-weight: 600;
+        }
+        
+        .result-table th.l1 { background: #004080; }
+        .result-table th.l2 { background: #17a2b8; }
+        .result-table th.l3 { background: #6f42c1; }
+        
+        .result-table td {
+            padding: 2px 5px;
+            border-bottom: 1px solid #ddd;
+        }
+        
+        .result-table tr:nth-child(even) { background: #f8f9fa; }
+        
+        /* Info Section */
+        .info-section {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 25px;
+            margin-top: 30px;
+            padding-top: 25px;
+            border-top: 2px dashed #004080;
+        }
+        
+        .info-box {
+            background: #f8f9fa;
+            border: 2px solid #004080;
+            border-radius: 8px;
+            padding: 20px;
+        }
+        
+        .info-box h4 {
+            color: #004080;
+            font-size: 14px;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+        }
+        
+        .info-box p {
+            font-size: 12px;
+            color: #333;
+            line-height: 1.6;
+        }
+        
+        .use-case-list {
+            margin-top: 15px;
+        }
+        
+        .use-case-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            margin-bottom: 12px;
+        }
+        
+        .use-case-icon {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+        
+        .use-case-icon.admin { background: #e7f3ff; }
+        .use-case-icon.health { background: #fff3cd; }
+        .use-case-icon.geo { background: #d4edda; }
+        .use-case-icon.org { background: #f8d7da; }
+        
+        .use-case-details {
+            font-size: 11px;
+            color: #333;
+            line-height: 1.5;
+        }
+        
+        .use-case-details strong {
+            color: #004080;
+        }
+        
+        .feature-list {
+            margin-top: 15px;
+        }
+        
+        .feature-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 8px;
+            font-size: 11px;
+        }
+        
+        .feature-item svg {
+            flex-shrink: 0;
+        }
+        
+        .tip-box {
+            margin-top: 15px;
+            padding: 12px;
+            background: #e7f3ff;
+            border-radius: 6px;
+            font-size: 11px;
+            border-left: 4px solid #004080;
+        }
+        
+        .tip-box strong {
+            color: #004080;
+        }
+        
+        .tip-box.warning {
+            background: #fff3cd;
+            border-left-color: #ffc107;
+        }
+        
+        .tip-box.warning strong {
+            color: #856404;
+        }
+        
+        .footer {
+            background: #004080;
+            color: white;
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+            font-size: 13px;
+        }
+        
+        /* Before/After Section */
+        .before-after-section {
+            margin-top: 30px;
+            padding-top: 25px;
+            border-top: 2px dashed #004080;
+        }
+        
+        .before-after-title {
+            text-align: center;
+            font-size: 16px;
+            font-weight: 700;
+            color: #004080;
+            margin-bottom: 20px;
+            text-transform: uppercase;
+        }
+        
+        .before-after-grid {
+            display: grid;
+            grid-template-columns: 1fr auto 1fr;
+            gap: 20px;
+            align-items: start;
+        }
+        
+        .before-section, .after-section {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 15px;
+            border: 2px solid #004080;
+        }
+        
+        .before-section { border-color: #17a2b8; }
+        .after-section { border-color: #28a745; }
+        
+        .section-label {
+            font-size: 12px;
+            font-weight: 700;
+            text-align: center;
+            margin-bottom: 12px;
+            padding: 6px;
+            border-radius: 4px;
+        }
+        
+        .before-section .section-label { background: #d1ecf1; color: #0c5460; }
+        .after-section .section-label { background: #d4edda; color: #155724; }
+        
+        .mini-table {
+            font-size: 9px;
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 10px;
+        }
+        
+        .mini-table th {
+            background: #004080;
+            color: white;
+            padding: 4px 6px;
+            text-align: left;
+        }
+        
+        .mini-table td {
+            padding: 3px 6px;
+            border-bottom: 1px solid #ddd;
+            background: white;
+        }
+        
+        .mini-table tr.duplicate td {
+            background: #fff3cd;
+        }
+        
+        .transform-arrow {
+            font-size: 40px;
+            color: #004080;
+            text-align: center;
+            margin-top: 80px;
+        }
+        
+        /* Tree output visual */
+        .tree-output {
+            background: #fff;
+            border: 2px solid #28a745;
+            border-radius: 6px;
+            padding: 10px;
+            margin-top: 10px;
+        }
+        
+        .tree-output-title {
+            font-size: 10px;
+            font-weight: 700;
+            color: #155724;
+            margin-bottom: 8px;
+            text-align: center;
+        }
+        
+        .tree-node-out {
+            font-size: 9px;
+            padding: 2px 0;
+        }
+        
+        .tree-node-out.level-0 {
+            color: #004080;
+            font-weight: 700;
+        }
+        
+        .tree-node-out.level-1 {
+            margin-left: 12px;
+            color: #17a2b8;
+        }
+        
+        .tree-node-out.level-2 {
+            margin-left: 24px;
+            color: #6f42c1;
+        }
+        
+        .tree-node-out.level-3 {
+            margin-left: 36px;
+            color: #28a745;
+        }
+        
+        .node-icon {
+            margin-right: 4px;
+        }
+        
+        /* Stats visual */
+        .stats-mini {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+            margin-top: 10px;
+        }
+        
+        .stat-mini {
+            background: #fff;
+            border: 2px solid #004080;
+            border-radius: 4px;
+            padding: 6px;
+            text-align: center;
+        }
+        
+        .stat-mini .num {
+            font-size: 14px;
+            font-weight: 700;
+            color: #004080;
+        }
+        
+        .stat-mini .label {
+            font-size: 7px;
+            color: #666;
+            text-transform: uppercase;
+        }
+        
+        @media (max-width: 1000px) {
+            .workflow {
+                flex-direction: column;
+                align-items: center;
+            }
+            .arrow {
+                transform: rotate(90deg);
+                margin: 10px 0;
+            }
+            .info-section {
+                grid-template-columns: 1fr;
+            }
+            .before-after-grid {
+                grid-template-columns: 1fr;
+            }
+            .transform-arrow {
+                transform: rotate(90deg);
+                margin: 10px auto;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="page-container">
+        <div class="header">
+            <h1>ADMIN LEVEL HIERARCHY EXTRACTOR</h1>
+            <p>Extract Linked Administrative Hierarchies from Your Data</p>
+            <p class="subtitle">Unique Values at Each Level • Tree & Table Views • Integrity Checking</p>
+        </div>
+
+        <div class="tool-section">
+            <div class="tool-title">EXTRACTION WORKFLOW</div>
+            
+            <div class="workflow">
+                <!-- Step 1: Upload -->
+                <div class="step-box">
+                    <div class="step-label">STEP 1: UPLOAD</div>
+                    <div class="file-box upload">
+                        <div class="file-icon">
+                            <svg width="45" height="45" viewBox="0 0 45 45">
+                                <rect x="8" y="5" width="29" height="35" rx="2" fill="#d1ecf1" stroke="#17a2b8" stroke-width="2"/>
+                                <line x1="13" y1="14" x2="32" y2="14" stroke="#17a2b8" stroke-width="2"/>
+                                <line x1="13" y1="21" x2="32" y2="21" stroke="#17a2b8" stroke-width="2"/>
+                                <line x1="13" y1="28" x2="32" y2="28" stroke="#17a2b8" stroke-width="2"/>
+                                <line x1="13" y1="35" x2="25" y2="35" stroke="#17a2b8" stroke-width="2"/>
+                            </svg>
+                        </div>
+                        <div class="file-name">Upload Data File</div>
+                        <div class="file-desc">Excel or CSV with admin data</div>
+                        
+                        <div class="data-preview">
+                            <span class="header-row">Region | District | Chiefdom | Facility</span><br>
+                            <span class="value">North | Bombali | Gbanti | PHU-1</span><br>
+                            <span class="value">North | Bombali | Gbanti | PHU-2</span><br>
+                            <span class="value">South | Bo | Kakua | CHC-1</span><br>
+                            <span class="value">...</span>
+                        </div>
+                        
+                        <div class="format-badges">
+                            <span class="format-badge csv">.CSV</span>
+                            <span class="format-badge excel">.XLS</span>
+                            <span class="format-badge excel">.XLSX</span>
+                        </div>
+                    </div>
+                    <div class="step-desc">Upload file with hierarchical columns</div>
+                </div>
+
+                <div class="arrow">→</div>
+
+                <!-- Step 2: Select Columns -->
+                <div class="step-box">
+                    <div class="step-label">STEP 2: SELECT</div>
+                    <div class="file-box select">
+                        <div class="file-icon">
+                            <svg width="45" height="45" viewBox="0 0 45 45">
+                                <rect x="5" y="8" width="35" height="30" rx="3" fill="#ede7f6" stroke="#6f42c1" stroke-width="2"/>
+                                <circle cx="14" cy="17" r="4" fill="#6f42c1"/>
+                                <text x="14" y="19" text-anchor="middle" fill="white" font-size="6" font-weight="bold">1</text>
+                                <circle cx="26" cy="17" r="4" fill="#6f42c1"/>
+                                <text x="26" y="19" text-anchor="middle" fill="white" font-size="6" font-weight="bold">2</text>
+                                <circle cx="38" cy="17" r="4" fill="none" stroke="#6f42c1" stroke-width="2"/>
+                                <circle cx="14" cy="30" r="4" fill="#6f42c1"/>
+                                <text x="14" y="32" text-anchor="middle" fill="white" font-size="6" font-weight="bold">3</text>
+                                <circle cx="26" cy="30" r="4" fill="none" stroke="#6f42c1" stroke-width="2"/>
+                                <path d="M18 17 L22 17 M30 17 L34 17" stroke="#6f42c1" stroke-width="2" stroke-dasharray="2 1"/>
+                            </svg>
+                        </div>
+                        <div class="file-name">Select Columns</div>
+                        <div class="file-desc">Click in hierarchical order</div>
+                        
+                        <div class="column-visual">
+                            <span class="column-chip-mini selected"><span class="num">1</span>Region</span>
+                            <span class="column-chip-mini selected"><span class="num">2</span>District</span>
+                            <span class="column-chip-mini selected"><span class="num">3</span>Chiefdom</span>
+                            <span class="column-chip-mini unselected">Population</span>
+                        </div>
+                        
+                        <div class="hierarchy-flow" style="margin-top:10px;">
+                            <span class="level-badge-mini l1">L1</span>
+                            <span class="hierarchy-arrow-mini">→</span>
+                            <span class="level-badge-mini l2">L2</span>
+                            <span class="hierarchy-arrow-mini">→</span>
+                            <span class="level-badge-mini l3">L3</span>
+                        </div>
+                    </div>
+                    <div class="step-desc">Parent → Child order</div>
+                </div>
+
+                <div class="arrow">→</div>
+
+                <!-- Step 3: Extract -->
+                <div class="step-box">
+                    <div class="step-label">STEP 3: EXTRACT</div>
+                    <div class="file-box extract">
+                        <div class="file-icon">
+                            <svg width="45" height="45" viewBox="0 0 45 45">
+                                <circle cx="22.5" cy="22.5" r="16" fill="none" stroke="#ffc107" stroke-width="2"/>
+                                <circle cx="22.5" cy="10" r="4" fill="#ffc107"/>
+                                <circle cx="12" cy="28" r="4" fill="#ffc107"/>
+                                <circle cx="33" cy="28" r="4" fill="#ffc107"/>
+                                <line x1="22.5" y1="14" x2="14" y2="25" stroke="#ffc107" stroke-width="2"/>
+                                <line x1="22.5" y1="14" x2="31" y2="25" stroke="#ffc107" stroke-width="2"/>
+                                <circle cx="7" cy="38" r="3" fill="#ffc107"/>
+                                <circle cx="17" cy="38" r="3" fill="#ffc107"/>
+                                <circle cx="28" cy="38" r="3" fill="#ffc107"/>
+                                <circle cx="38" cy="38" r="3" fill="#ffc107"/>
+                                <line x1="12" y1="32" x2="9" y2="35" stroke="#ffc107" stroke-width="1.5"/>
+                                <line x1="12" y1="32" x2="15" y2="35" stroke="#ffc107" stroke-width="1.5"/>
+                                <line x1="33" y1="32" x2="30" y2="35" stroke="#ffc107" stroke-width="1.5"/>
+                                <line x1="33" y1="32" x2="36" y2="35" stroke="#ffc107" stroke-width="1.5"/>
+                            </svg>
+                        </div>
+                        <div class="file-name">Build Hierarchy</div>
+                        <div class="file-desc">Extract unique combinations</div>
+                        
+                        <div class="tree-mini">
+                            <div class="tree-mini-node tree-mini-branch">▼ North (2)</div>
+                            <div class="tree-mini-node tree-indent-1 tree-mini-branch">▼ Bombali (2)</div>
+                            <div class="tree-mini-node tree-indent-2 tree-mini-leaf">• Gbanti</div>
+                            <div class="tree-mini-node tree-indent-2 tree-mini-leaf">• Makeni</div>
+                            <div class="tree-mini-node tree-mini-branch">▼ South (1)</div>
+                            <div class="tree-mini-node tree-indent-1 tree-mini-leaf">• Bo...</div>
+                        </div>
+                        
+                        <div style="margin-top:8px;font-size:8px;color:#856404;text-align:center;">
+                            ⚠️ Detects integrity issues
+                        </div>
+                    </div>
+                    <div class="step-desc">Linked parent-child paths</div>
+                </div>
+
+                <div class="arrow">→</div>
+
+                <!-- Step 4: Download -->
+                <div class="step-box">
+                    <div class="step-label">STEP 4: DOWNLOAD</div>
+                    <div class="file-box output">
+                        <div class="file-icon">
+                            <svg width="45" height="45" viewBox="0 0 45 45">
+                                <circle cx="22.5" cy="22.5" r="18" fill="#28a745"/>
+                                <path d="M22.5 12 L22.5 28 M16 22 L22.5 28 L29 22" stroke="white" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+                                <line x1="14" y1="32" x2="31" y2="32" stroke="white" stroke-width="3" stroke-linecap="round"/>
+                            </svg>
+                        </div>
+                        <div class="file-name">View & Download</div>
+                        <div class="file-desc">Multiple output formats</div>
+                        
+                        <div class="output-tabs">
+                            <span class="output-tab active">🌳 Tree</span>
+                            <span class="output-tab">📊 Table</span>
+                            <span class="output-tab">📈 Levels</span>
+                        </div>
+                        
+                        <table class="result-table">
+                            <thead>
+                                <tr>
+                                    <th class="l1">Region</th>
+                                    <th class="l2">District</th>
+                                    <th class="l3">Chiefdom</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr><td>North</td><td>Bombali</td><td>Gbanti</td></tr>
+                                <tr><td>North</td><td>Bombali</td><td>Makeni</td></tr>
+                                <tr><td>South</td><td>Bo</td><td>Kakua</td></tr>
+                            </tbody>
+                        </table>
+                        
+                        <div class="format-badges" style="margin-top:8px;">
+                            <span class="format-badge excel">Full Hierarchy</span>
+                            <span class="format-badge excel">By Level</span>
+                        </div>
+                    </div>
+                    <div class="step-desc">Tree, table, or by-level</div>
+                </div>
+            </div>
+
+            <!-- Before/After Visual -->
+            <div class="before-after-section">
+                <div class="before-after-title">Before & After Example</div>
+                
+                <div class="before-after-grid">
+                    <div class="before-section">
+                        <div class="section-label">BEFORE: Raw Data with Duplicates</div>
+                        
+                        <p style="font-size:10px;color:#666;margin-bottom:10px;text-align:center;">1,000+ rows with repeated hierarchy values</p>
+                        
+                        <table class="mini-table">
+                            <thead>
+                                <tr>
+                                    <th>Region</th>
+                                    <th>District</th>
+                                    <th>Chiefdom</th>
+                                    <th>Cases</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr><td>North</td><td>Bombali</td><td>Gbanti</td><td>45</td></tr>
+                                <tr class="duplicate"><td>North</td><td>Bombali</td><td>Gbanti</td><td>32</td></tr>
+                                <tr class="duplicate"><td>North</td><td>Bombali</td><td>Gbanti</td><td>28</td></tr>
+                                <tr><td>North</td><td>Bombali</td><td>Makeni</td><td>67</td></tr>
+                                <tr class="duplicate"><td>North</td><td>Bombali</td><td>Makeni</td><td>54</td></tr>
+                                <tr><td>South</td><td>Bo</td><td>Kakua</td><td>89</td></tr>
+                                <tr class="duplicate"><td>South</td><td>Bo</td><td>Kakua</td><td>76</td></tr>
+                                <tr><td colspan="4" style="text-align:center;color:#666;">... 993 more rows</td></tr>
+                            </tbody>
+                        </table>
+                        
+                        <div class="tip-box warning" style="margin-top:10px;padding:8px;font-size:9px;">
+                            <strong>Problem:</strong> Same hierarchy paths repeated many times. Hard to see the actual structure.
+                        </div>
+                    </div>
+                    
+                    <div class="transform-arrow">→</div>
+                    
+                    <div class="after-section">
+                        <div class="section-label">AFTER: Clean Hierarchy Extracted</div>
+                        
+                        <div class="stats-mini">
+                            <div class="stat-mini">
+                                <div class="num">2</div>
+                                <div class="label">Regions</div>
+                            </div>
+                            <div class="stat-mini">
+                                <div class="num">2</div>
+                                <div class="label">Districts</div>
+                            </div>
+                            <div class="stat-mini">
+                                <div class="num">3</div>
+                                <div class="label">Chiefdoms</div>
+                            </div>
+                        </div>
+                        
+                        <div class="tree-output">
+                            <div class="tree-output-title">🌳 Hierarchy Tree View</div>
+                            <div class="tree-node-out level-0"><span class="node-icon">▼</span> North</div>
+                            <div class="tree-node-out level-1"><span class="node-icon">▼</span> Bombali</div>
+                            <div class="tree-node-out level-2"><span class="node-icon">•</span> Gbanti</div>
+                            <div class="tree-node-out level-2"><span class="node-icon">•</span> Makeni</div>
+                            <div class="tree-node-out level-0"><span class="node-icon">▼</span> South</div>
+                            <div class="tree-node-out level-1"><span class="node-icon">▼</span> Bo</div>
+                            <div class="tree-node-out level-2"><span class="node-icon">•</span> Kakua</div>
+                        </div>
+                        
+                        <div class="tip-box" style="margin-top:10px;padding:8px;font-size:9px;">
+                            <strong>Result:</strong> 3 unique hierarchy paths extracted from 1,000 rows. Clear parent-child relationships visible.
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Info Section -->
+            <div class="info-section">
+                <div class="info-box">
+                    <h4>Common Use Cases</h4>
+                    <p>The Hierarchy Extractor is perfect for understanding and documenting administrative structures in your data.</p>
+                    
+                    <div class="use-case-list">
+                        <div class="use-case-item">
+                            <div class="use-case-icon admin">
+                                <svg width="16" height="16" viewBox="0 0 16 16">
+                                    <rect x="2" y="2" width="12" height="3" rx="1" fill="#004080"/>
+                                    <rect x="4" y="7" width="8" height="3" rx="1" fill="#004080"/>
+                                    <rect x="6" y="12" width="4" height="2" rx="0.5" fill="#004080"/>
+                                    <line x1="8" y1="5" x2="8" y2="7" stroke="#004080" stroke-width="1"/>
+                                    <line x1="8" y1="10" x2="8" y2="12" stroke="#004080" stroke-width="1"/>
+                                </svg>
+                            </div>
+                            <div class="use-case-details">
+                                <strong>Administrative Boundaries</strong><br>
+                                Extract Region → District → Chiefdom → Section hierarchy
+                            </div>
+                        </div>
+                        <div class="use-case-item">
+                            <div class="use-case-icon health">
+                                <svg width="16" height="16" viewBox="0 0 16 16">
+                                    <rect x="6" y="2" width="4" height="12" rx="1" fill="#856404"/>
+                                    <rect x="2" y="6" width="12" height="4" rx="1" fill="#856404"/>
+                                </svg>
+                            </div>
+                            <div class="use-case-details">
+                                <strong>Health Facility Networks</strong><br>
+                                Map District → PHU Type → Individual Facilities
+                            </div>
+                        </div>
+                        <div class="use-case-item">
+                            <div class="use-case-icon geo">
+                                <svg width="16" height="16" viewBox="0 0 16 16">
+                                    <circle cx="8" cy="6" r="4" fill="none" stroke="#28a745" stroke-width="2"/>
+                                    <path d="M8 10 L8 14 L5 14 M8 14 L11 14" stroke="#28a745" stroke-width="2" stroke-linecap="round"/>
+                                </svg>
+                            </div>
+                            <div class="use-case-details">
+                                <strong>DHIS2 Org Unit Hierarchies</strong><br>
+                                Document organization unit structures for DHIS2
+                            </div>
+                        </div>
+                        <div class="use-case-item">
+                            <div class="use-case-icon org">
+                                <svg width="16" height="16" viewBox="0 0 16 16">
+                                    <circle cx="8" cy="4" r="2" fill="#dc3545"/>
+                                    <circle cx="4" cy="10" r="2" fill="#dc3545"/>
+                                    <circle cx="12" cy="10" r="2" fill="#dc3545"/>
+                                    <line x1="8" y1="6" x2="4" y2="8" stroke="#dc3545" stroke-width="1.5"/>
+                                    <line x1="8" y1="6" x2="12" y2="8" stroke="#dc3545" stroke-width="1.5"/>
+                                </svg>
+                            </div>
+                            <div class="use-case-details">
+                                <strong>Program Hierarchies</strong><br>
+                                National → Provincial → District program structures
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="info-box">
+                    <h4>Key Features</h4>
+                    <p>The tool intelligently extracts and validates hierarchical relationships.</p>
+                    
+                    <div class="feature-list">
+                        <div class="feature-item">
+                            <svg width="16" height="16" viewBox="0 0 16 16">
+                                <circle cx="8" cy="8" r="6" fill="#28a745"/>
+                                <polyline points="5,8 7,10 11,6" fill="none" stroke="#fff" stroke-width="1.5"/>
+                            </svg>
+                            <span><strong>Unique Path Extraction</strong> - Deduplicates automatically</span>
+                        </div>
+                        <div class="feature-item">
+                            <svg width="16" height="16" viewBox="0 0 16 16">
+                                <circle cx="8" cy="8" r="6" fill="#28a745"/>
+                                <polyline points="5,8 7,10 11,6" fill="none" stroke="#fff" stroke-width="1.5"/>
+                            </svg>
+                            <span><strong>Interactive Tree View</strong> - Expand/collapse nodes</span>
+                        </div>
+                        <div class="feature-item">
+                            <svg width="16" height="16" viewBox="0 0 16 16">
+                                <circle cx="8" cy="8" r="6" fill="#28a745"/>
+                                <polyline points="5,8 7,10 11,6" fill="none" stroke="#fff" stroke-width="1.5"/>
+                            </svg>
+                            <span><strong>Integrity Checking</strong> - Detects data issues</span>
+                        </div>
+                        <div class="feature-item">
+                            <svg width="16" height="16" viewBox="0 0 16 16">
+                                <circle cx="8" cy="8" r="6" fill="#28a745"/>
+                                <polyline points="5,8 7,10 11,6" fill="none" stroke="#fff" stroke-width="1.5"/>
+                            </svg>
+                            <span><strong>Search & Filter</strong> - Find any value quickly</span>
+                        </div>
+                        <div class="feature-item">
+                            <svg width="16" height="16" viewBox="0 0 16 16">
+                                <circle cx="8" cy="8" r="6" fill="#28a745"/>
+                                <polyline points="5,8 7,10 11,6" fill="none" stroke="#fff" stroke-width="1.5"/>
+                            </svg>
+                            <span><strong>Level-by-Level Export</strong> - Separate sheets per level</span>
+                        </div>
+                        <div class="feature-item">
+                            <svg width="16" height="16" viewBox="0 0 16 16">
+                                <circle cx="8" cy="8" r="6" fill="#28a745"/>
+                                <polyline points="5,8 7,10 11,6" fill="none" stroke="#fff" stroke-width="1.5"/>
+                            </svg>
+                            <span><strong>Column Type Detection</strong> - Text vs numeric columns</span>
+                        </div>
+                    </div>
+                    
+                    <div class="tip-box">
+                        <strong>Tip:</strong> The tool detects when the same child value appears under multiple parents (e.g., "Freetown" under both "Western Urban" and "Western Rural") and flags these as potential data quality issues.
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="footer">
+            <strong>Informatics Consultancy Firm-Sierra Leone (ICF-SL)</strong><br>
+            <span style="font-size: 11px; opacity: 0.8;">Driving Data-Driven Solutions for Health and Development</span>
+        </div>
+    </div>
+</body>
+</html>
